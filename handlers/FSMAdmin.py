@@ -1,3 +1,5 @@
+import sqlite3
+
 from aiogram import types, Dispatcher
 from aiogram.dispatcher import FSMContext
 
@@ -26,7 +28,7 @@ async def load_photo(message: types.Message, state: FSMContext):
     print(message.photo)
     async with state.proxy() as data:
         data["photo"] = message.photo[0].file_id
-    await message.answer("название Блюдо")
+    await message.answer("название Блюдо:")
     await FSMAdmin.next()
 
 
@@ -36,7 +38,7 @@ async def load_Title(message: types.Message, state: FSMContext):
         data["Title"] = message.text
         print(data)
     await FSMAdmin.next()
-    await message.answer("описание Блюдо")
+    await message.answer("описание Блюдо:")
 
 
 async def load_Description(message: types.Message, state: FSMContext):
@@ -44,7 +46,7 @@ async def load_Description(message: types.Message, state: FSMContext):
         data["Description"] = message.text
         print(data)
     await FSMAdmin.next()
-    await message.answer("Стоимость Блюдо")
+    await message.answer("Стоимость Блюдо:")
 
 
 async def load_Price(message: types.Message, state: FSMContext):
@@ -55,14 +57,32 @@ async def load_Price(message: types.Message, state: FSMContext):
     except:
         await message.answer("пишите числами!!")
 
+
+
+
     await state.finish()
     await bot.send_photo(
         message.from_user.id,
         data["photo"],
-        caption=f"Title: {data['Title']}"
-        f"Description: {data['Description']}"
-        f"Price: {data['Price']}",
+        caption=f"""Title: {data['Title']}
+        Description: {data['Description']}
+        Price: {data['Price']}""",
     )
+
+
+def sql_create():
+    global db, cursor
+    db = sqlite3.connect("bot.sqlite3")
+    cursor = db.cursor()
+
+    if db:
+        print("База данных подключена!")
+
+    db.execute("CREATE TABLE IF NOT EXISTS menu "
+               "(id INTEGER PRIMARY KEY, Title TEXT,"
+               "photo TEXT,Description TEXT,Price INTEGER,"
+               "region TEXT)")
+    db.commit()
 
 
 def register_handler_fsm_dish(dp: Dispatcher):
